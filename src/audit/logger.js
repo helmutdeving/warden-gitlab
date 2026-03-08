@@ -20,17 +20,21 @@ try {
   SqliteDatabase = null;
 }
 
-const IN_MEMORY_LOG = [];
-
 export class AuditLogger {
   #db = null;
   #dbPath;
   #inMemory = false;
+  #memLog = [];
 
-  constructor(dbPath = ':memory:') {
+  /**
+   * @param {string} dbPath - SQLite database path. Use ':memory:' for an in-process DB.
+   * @param {object} opts
+   * @param {boolean} opts.forceInMemory - Force in-memory mode (useful for testing).
+   */
+  constructor(dbPath = ':memory:', { forceInMemory = false } = {}) {
     this.#dbPath = dbPath;
 
-    if (SqliteDatabase) {
+    if (SqliteDatabase && !forceInMemory) {
       this.#db = new SqliteDatabase(dbPath);
       this.#initSchema();
     } else {
@@ -89,8 +93,8 @@ export class AuditLogger {
     };
 
     if (this.#inMemory) {
-      IN_MEMORY_LOG.push({ id: IN_MEMORY_LOG.length + 1, ...entry });
-      return IN_MEMORY_LOG.length;
+      this.#memLog.push({ id: this.#memLog.length + 1, ...entry });
+      return this.#memLog.length;
     }
 
     const stmt = this.#db.prepare(`
@@ -123,7 +127,7 @@ export class AuditLogger {
    */
   query({ decision, since, limit = 50 } = {}) {
     if (this.#inMemory) {
-      let results = [...IN_MEMORY_LOG];
+      let results = [...this.#memLog];
       if (decision) results = results.filter(r => r.decision === decision);
       if (since) {
         const sinceDate = this.#parseSince(since);
@@ -157,7 +161,7 @@ export class AuditLogger {
       const now = new Date();
       const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
       const hourAgo = new Date(now - 60 * 60 * 1000);
-      const approved = IN_MEMORY_LOG.filter(r => r.decision === 'APPROVE');
+      const approved = this.#memLog.filter(r => r.decision === 'APPROVE');
       return {
         dailySpent: approved
           .filter(r => new Date(r.timestamp) >= dayAgo)

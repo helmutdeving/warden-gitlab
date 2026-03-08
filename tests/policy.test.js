@@ -216,3 +216,69 @@ describe('Policy Engine — result shape', () => {
     expect(result.reason).toContain('daily limit');
   });
 });
+
+// ─── summarizePolicy() ────────────────────────────────────────────────────────
+
+import { summarizePolicy } from '../src/policy/engine.js';
+
+describe('summarizePolicy()', () => {
+  test('returns summary with all expected keys', () => {
+    const summary = summarizePolicy({});
+    expect(summary).toHaveProperty('autoApproveLimit');
+    expect(summary).toHaveProperty('dailyLimit');
+    expect(summary).toHaveProperty('maxTxPerHour');
+    expect(summary).toHaveProperty('whitelistedAddresses');
+    expect(summary).toHaveProperty('blacklistedAddresses');
+  });
+
+  test('uses DEFAULT_POLICY values when no policy is provided', () => {
+    const summary = summarizePolicy();
+    expect(summary.autoApproveLimit).toBe(DEFAULT_POLICY.autoApproveLimit);
+    expect(summary.dailyLimit).toBe(DEFAULT_POLICY.dailyLimit);
+    expect(summary.maxTxPerHour).toBe(DEFAULT_POLICY.maxTxPerHour);
+    expect(summary.whitelistedAddresses).toBe(DEFAULT_POLICY.whitelist.length);
+    expect(summary.blacklistedAddresses).toBe(DEFAULT_POLICY.blacklist.length);
+  });
+
+  test('reflects custom autoApproveLimit', () => {
+    const summary = summarizePolicy({ autoApproveLimit: 1000 });
+    expect(summary.autoApproveLimit).toBe(1000);
+  });
+
+  test('reflects custom dailyLimit', () => {
+    const summary = summarizePolicy({ dailyLimit: 50000 });
+    expect(summary.dailyLimit).toBe(50000);
+  });
+
+  test('reflects custom maxTxPerHour', () => {
+    const summary = summarizePolicy({ maxTxPerHour: 100 });
+    expect(summary.maxTxPerHour).toBe(100);
+  });
+
+  test('counts whitelisted addresses correctly', () => {
+    const summary = summarizePolicy({
+      whitelist: ['0xAAAA', '0xBBBB', '0xCCCC'],
+    });
+    expect(summary.whitelistedAddresses).toBe(3);
+  });
+
+  test('counts blacklisted addresses correctly', () => {
+    const summary = summarizePolicy({
+      blacklist: ['0xDEAD', '0xBAD'],
+    });
+    expect(summary.blacklistedAddresses).toBe(2);
+  });
+
+  test('returns 0 for empty whitelist/blacklist', () => {
+    const summary = summarizePolicy({ whitelist: [], blacklist: [] });
+    expect(summary.whitelistedAddresses).toBe(0);
+    expect(summary.blacklistedAddresses).toBe(0);
+  });
+
+  test('merges custom policy with defaults (partial override)', () => {
+    const summary = summarizePolicy({ autoApproveLimit: 999 });
+    // dailyLimit should still be the default
+    expect(summary.dailyLimit).toBe(DEFAULT_POLICY.dailyLimit);
+    expect(summary.autoApproveLimit).toBe(999);
+  });
+});

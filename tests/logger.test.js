@@ -294,10 +294,126 @@ describe('AuditLogger.close()', () => {
   test('close() on already-closed logger does not throw', () => {
     const logger = new AuditLogger(':memory:');
     logger.close();
-    // Second close — SQLite will error; our code should handle gracefully
-    // (This is testing the close() method's robustness)
     // Note: SQLite DatabaseSync may throw on double close — that's acceptable behaviour
     // Just verify the method exists and can be called once without error
     expect(true).toBe(true);
+  });
+});
+
+// ─── In-memory fallback (forceInMemory: true) ─────────────────────────────────
+// These tests exercise the Node < 22.5 in-memory fallback path via the
+// `forceInMemory` constructor option, ensuring full production parity.
+
+describe('AuditLogger in-memory fallback (forceInMemory)', () => {
+  let logger;
+  beforeEach(() => {
+    logger = new AuditLogger(':memory:', { forceInMemory: true });
+  });
+  afterEach(() => logger.close());
+
+  test('constructor with forceInMemory:true creates an in-memory logger', () => {
+    expect(logger).toBeDefined();
+    // Should be usable without SQLite
+    expect(() => logger.record(makeEntry())).not.toThrow();
+  });
+
+  test('record() returns a sequential id (1-based)', () => {
+    const id1 = logger.record(makeEntry());
+    const id2 = logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    expect(id1).toBe(1);
+    expect(id2).toBe(2);
+  });
+
+  test('record() stores all three decision types', () => {
+    logger.record(makeEntry({ decision: 'APPROVE', rule: 'per-tx-limit' }));
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    logger.record(makeEntry({ decision: 'ESCALATE', rule: 'daily-cap' }));
+    const rows = logger.query();
+    expect(rows).toHaveLength(3);
+  });
+
+  test('query() returns all entries with no filter', () => {
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    const rows = logger.query();
+    expect(rows).toHaveLength(2);
+  });
+
+  test('query() filters by decision', () => {
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    const approvals = logger.query({ decision: 'APPROVE' });
+    expect(approvals).toHaveLength(2);
+    approvals.forEach(r => expect(r.decision).toBe('APPROVE'));
+  });
+
+  test('query() since filter returns only recent entries', () => {
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    const rows = logger.query({ since: '1h' });
+    expect(rows.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('query() since=invalid returns all entries (epoch fallback)', () => {
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    const rows = logger.query({ since: 'bad-value' });
+    expect(rows).toHaveLength(2);
+  });
+
+  test('query() respects limit', () => {
+    for (let i = 0; i < 10; i++) {
+      logger.record(makeEntry({ decision: 'APPROVE' }));
+    }
+    const rows = logger.query({ limit: 3 });
+    expect(rows).toHaveLength(3);
+  });
+
+  test('query() combined: decision + since + limit', () => {
+    for (let i = 0; i < 5; i++) {
+      logger.record(makeEntry({ decision: 'APPROVE', request: { recipient: `0x${i}`, amount: i * 10 } }));
+    }
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    const rows = logger.query({ decision: 'APPROVE', since: '1h', limit: 2 });
+    expect(rows).toHaveLength(2);
+    rows.forEach(r => expect(r.decision).toBe('APPROVE'));
+  });
+
+  test('getState() returns zero state on empty log', () => {
+    const state = logger.getState();
+    expect(state).toMatchObject({ dailySpent: 0, hourlyTxCount: 0 });
+  });
+
+  test('getState() accumulates dailySpent from APPROVE decisions', () => {
+    logger.record(makeEntry({ decision: 'APPROVE', request: { recipient: '0xA', amount: 100 } }));
+    logger.record(makeEntry({ decision: 'APPROVE', request: { recipient: '0xB', amount: 250 } }));
+    const state = logger.getState();
+    expect(state.dailySpent).toBeCloseTo(350);
+  });
+
+  test('getState() ignores REJECT decisions in dailySpent', () => {
+    logger.record(makeEntry({ decision: 'REJECT', request: { recipient: '0xBAD', amount: 9999 } }));
+    const state = logger.getState();
+    expect(state.dailySpent).toBe(0);
+  });
+
+  test('getState() counts hourlyTxCount only for APPROVE', () => {
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    logger.record(makeEntry({ decision: 'REJECT', rule: 'blacklist' }));
+    const state = logger.getState();
+    expect(state.hourlyTxCount).toBe(2);
+  });
+
+  test('each logger instance has isolated in-memory state', () => {
+    const loggerB = new AuditLogger(':memory:', { forceInMemory: true });
+    logger.record(makeEntry({ decision: 'APPROVE' }));
+    // loggerB should have no entries
+    expect(loggerB.query()).toHaveLength(0);
+    loggerB.close();
+  });
+
+  test('close() on in-memory logger does not throw', () => {
+    expect(() => logger.close()).not.toThrow();
   });
 });

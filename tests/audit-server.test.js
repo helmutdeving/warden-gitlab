@@ -266,3 +266,37 @@ describe('Server isolation', () => {
     await ctx2.close();
   });
 });
+
+// ─── clientError handler ──────────────────────────────────────────────────────
+
+describe('Server clientError handler', () => {
+  test('clientError event sends 400 and ends the socket', (done) => {
+    import('net').then(({ createConnection }) => {
+      createAuditServer({ logger: new AuditLogger(':memory:') }).then
+        ? null
+        : null; // server is sync
+
+      const { server } = createAuditServer({ logger: new AuditLogger(':memory:') });
+      server.listen(0, '127.0.0.1', () => {
+        const { port } = server.address();
+        const socket = createConnection(port, '127.0.0.1', () => {
+          // Send malformed HTTP to trigger clientError
+          socket.write('INVALID HTTP REQUEST\r\n\r\n');
+        });
+
+        let data = '';
+        socket.on('data', chunk => { data += chunk.toString(); });
+        socket.on('close', () => {
+          server.close(() => {
+            expect(data).toContain('400 Bad Request');
+            done();
+          });
+        });
+        socket.on('error', () => {
+          // Socket errors during close are expected
+          server.close(() => done());
+        });
+      });
+    });
+  });
+});
