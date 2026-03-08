@@ -21,7 +21,9 @@ agent_type: external
 
 executor:
   type: docker
-  image: warden-gitlab:latest
+  # Public image on GitHub Container Registry — no auth required
+  # Build from source: docker build -t ghcr.io/helmutdeving/warden-gitlab:latest .
+  image: ghcr.io/helmutdeving/warden-gitlab:latest
   command: ["node", "src/index.js"]
 
 triggers:
