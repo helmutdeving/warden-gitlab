@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "serve:audit": "node src/audit/server.js",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "demo": "node src/demo.js",
     "lint": "node --check src/**/*.js"
