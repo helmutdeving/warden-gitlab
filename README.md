@@ -3,7 +3,7 @@
 > AI-powered treasury governance for GitLab projects. Evaluates financial transfer requests in issues using Claude, enforces configurable spending policies, and posts APPROVE/REJECT/ESCALATE decisions as comments.
 
 [![CI](https://github.com/helmutdeving/warden-gitlab/actions/workflows/ci.yml/badge.svg)](https://github.com/helmutdeving/warden-gitlab/actions)
-[![Tests](https://img.shields.io/badge/tests-184%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-193%20passing-brightgreen)](tests/)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](coverage/)
 [![GitLab Duo](https://img.shields.io/badge/GitLab%20Duo-External%20Agent-fc6d26)](https://docs.gitlab.com/user/duo_agent_platform/)
 [![Anthropic](https://img.shields.io/badge/Powered%20by-Claude%20via%20GitLab%20AI%20Gateway-5A4AF4)](https://docs.gitlab.com/user/duo_agent_platform/agents/external/)
@@ -78,7 +78,11 @@ warden-gitlab/
 └── tests/
     ├── policy.test.js                ← 25 tests
     ├── parser.test.js                ← 19 tests
-    └── commenter.test.js             ← 14 tests
+    ├── parser-gateway.test.js        ← 17 tests
+    ├── commenter.test.js             ← 14 tests
+    ├── logger.test.js                ← 33 tests
+    ├── audit-server.test.js          ← 76 tests
+    └── integration.test.js           ←  9 end-to-end subprocess tests
 ```
 
 ### How GitLab Duo External Agents Work
