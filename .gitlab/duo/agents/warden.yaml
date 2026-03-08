@@ -1,0 +1,35 @@
+name: Warden Treasury Sentinel
+description: |
+  AI-powered treasury agent that evaluates financial transfer requests posted in GitLab issues.
+  Uses Claude (via GitLab's AI gateway) to parse natural language requests, then enforces
+  configurable spending policies. Every decision is logged to an append-only audit trail.
+
+  Decisions: APPROVE (within limits) | REJECT (policy violation) | ESCALATE (human review required)
+
+  Trigger this agent by mentioning @warden in an issue with a transfer request, e.g.:
+    "@warden transfer 500 USDC to 0x1234...abcd for contractor payment"
+
+version: "1.0"
+agent_type: external
+
+# GitLab spins this Docker container when the agent is triggered.
+# Environment variables injected by GitLab:
+#   AI_FLOW_CONTEXT        — JSON blob with issue/MR context
+#   AI_FLOW_INPUT          — The user's message that triggered the agent
+#   AI_FLOW_GITLAB_TOKEN   — Token to call GitLab API (post comments, etc.)
+#   AI_FLOW_AI_GATEWAY_TOKEN — Token to call Claude via GitLab's AI gateway
+
+executor:
+  type: docker
+  image: warden-gitlab:latest
+  command: ["node", "src/index.js"]
+
+triggers:
+  - type: issue_mention
+    mention: "@warden"
+  - type: note_mention
+    mention: "@warden"
+
+settings:
+  timeout_seconds: 30
+  max_retries: 2
