@@ -278,6 +278,18 @@ Tests: 58 passing
 
 ---
 
+## Links
+
+| Resource | URL |
+|----------|-----|
+| **Demo player** | https://helmutdeving.github.io/warden-gitlab/ |
+| **Demo video (MP4)** | https://helmutdeving.github.io/warden-gitlab/demo.mp4 |
+| **asciinema** | https://asciinema.org/a/zqS453kLSA0rkzH0 |
+| **CI/CD** | https://github.com/helmutdeving/warden-gitlab/actions |
+| **Coverage** | https://github.com/helmutdeving/warden-gitlab/actions (Jest --coverage) |
+
+---
+
 ## License
 
 MIT — built by [helmutdev](https://github.com/helmutdeving) for the GitLab AI Hackathon 2026.
