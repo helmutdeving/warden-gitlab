@@ -14,7 +14,7 @@
  */
 
 const AI_GATEWAY_URL = 'https://cloud.gitlab.com/ai/v1/proxy/anthropic';
-const MODEL = 'claude-claude-3-5-sonnet-20241022';
+const MODEL = 'claude-3-5-sonnet-20241022';
 
 const EXTRACTION_PROMPT = `You are a treasury compliance assistant. Extract structured financial transfer details from the user's request.
 
