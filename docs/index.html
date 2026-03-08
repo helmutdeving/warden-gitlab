@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warden Treasury Sentinel — Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #58a6ff;
+    }
+    .tagline {
+      color: #8b949e;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+    video {
+      width: 100%;
+      max-width: 800px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .links {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    a {
+      color: #58a6ff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+    a:hover { border-color: #58a6ff; }
+    .badge {
+      display: inline-block;
+      margin-top: 1rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.85rem;
+      color: #8b949e;
+      max-width: 800px;
+      width: 100%;
+    }
+    .badge code {
+      color: #79c0ff;
+      background: #0d1117;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛡 Warden Treasury Sentinel</h1>
+  <p class="tagline">AI-powered treasury governance for GitLab — APPROVE / REJECT / ESCALATE in seconds</p>
+
+  <video controls autoplay muted loop playsinline>
+    <source src="demo.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+
+  <div class="badge">
+    <strong>Live demo</strong>: Mention <code>@warden transfer 2500 USDC to 0x... for Q1 infra</code> in any GitLab issue —
+    Warden parses the request via Claude, evaluates against policy rules, and posts a structured decision comment.
+    193 tests · 93% coverage · zero production dependencies.
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/helmutdeving/warden-gitlab" target="_blank">📦 GitHub</a>
+    <a href="https://github.com/helmutdeving/warden-gitlab/actions" target="_blank">✅ CI</a>
+    <a href="https://asciinema.org/a/zqS453kLSA0rkzH0" target="_blank">▶ asciinema</a>
+    <a href="demo.mp4" target="_blank">⬇ Download MP4</a>
+  </div>
+</body>
+</html>
