@@ -1,7 +1,7 @@
 {
   "name": "warden-gitlab",
   "version": "1.0.0",
-  "description": "GitLab Duo external agent — AI treasury sentinel powered by Claude + Warden policy engine",
+  "description": "GitLab Duo external agent \u2014 AI treasury sentinel powered by Claude + Warden policy engine",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
@@ -20,10 +20,12 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {},
-    "testMatch": ["**/tests/**/*.test.js"]
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.5.0"
   },
   "keywords": [
     "gitlab",

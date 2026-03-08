@@ -133,7 +133,7 @@ export class AuditLogger {
         const sinceDate = this.#parseSince(since);
         results = results.filter(r => new Date(r.timestamp) >= sinceDate);
       }
-      return results.slice(-limit);
+      return results.reverse().slice(0, limit);  // Match SQLite ORDER BY id DESC
     }
 
     let query = 'SELECT * FROM audit_log WHERE 1=1';

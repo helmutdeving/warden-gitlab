@@ -8,11 +8,11 @@ on:
 
 jobs:
   test:
-    name: Tests (Node ${{ matrix.node }})
+    name: Tests (Node ${{ matrix.node }} — requires >=22.5)
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [20, 22]
+        node: [22]  # node:sqlite requires Node >= 22.5
 
     steps:
       - uses: actions/checkout@v4
